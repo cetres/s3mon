@@ -38,7 +38,7 @@ def load_objects(bucket, prefix=None, region=None, max_iter=0):
         logging.debug('Iter: {}'.format(ct))
         if max_iter > 0 and ct >= max_iter:
             break
-    df['LastModified'] = pd.to_datetime(df['LastModified'])
+    df['LastModified'] = pd.to_datetime(df['LastModified'], utc=True)
     logging.info('IsTruncated: {}\nQty: {}'.format(objects['IsTruncated'], len(objects['Contents'])))
     return df.set_index('Key')
 
@@ -48,24 +48,26 @@ if __name__ == '__main__':
         default_cache = '/var/spool/s3mon'
     elif platform_name == 'Windows':
         default_cache = os.path.expandvars('$TEMP\\s3mon')
+    elif platform_name == 'Darwin':
+        default_cache = os.path.expandvars('$HOME/Library/s3mon')
     else:
         default_cache = './cache'
     description = u"Identify new files in s3 bucket"
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('bucket', metavar='BUCKET', type=str, nargs='+',
-                    help='buckets for read')
+                    help='bucket(s) for read')
     parser.add_argument("-p", "--prefix",
-                  help=u"Prefix to find")
+                  help=u"Prefix of the key to find")
     parser.add_argument("-r", "--region",
-                  help=u"Region of bucket (Optional)")
+                  help=u"Region of bucket")
     parser.add_argument("-m", "--max_iter", default='100',
-                  help=u"Max iteration times for s3 list. ")
+                  help=u"Max iteration times for s3 list")
     parser.add_argument("-d", "--debug", action='store_true',
                   help=u"Debug output")
     parser.add_argument("-l", "--log_file", 
-                  help=u"Nome do arquivo para armazenar o log")
+                  help=u"Log file")
     parser.add_argument("-c", "--cache_dir", default=default_cache,
-                  help=u"Nome do arquivo para armazenar o cache")
+                  help=u"Cache path for state store")
 
     args = parser.parse_args()
 
@@ -97,9 +99,9 @@ if __name__ == '__main__':
             else:
                 logging.debug('Cache not found: {}'.format(filepath))
             df_new.to_csv(filepath, compression='gzip')
-
+    except SystemExit as e:
+        raise
     except:
         logging.critical('Unknown error found')
-        raise # for debug purpose
+        #raise # for debug purpose
         sys.exit(1)
-
