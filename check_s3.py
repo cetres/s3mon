@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 check_s3 - Identify older files plugin for Nagios
 """
