@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-check_s3 - Identify older files
+check_s3 - Identify older files plugin for Nagios
 """
 __author__ = "Gustavo Oliveira (cetres@gmail.com)"
 __version__ = "0.1.0"
@@ -19,12 +19,11 @@ from urllib.parse import urlparse
 import boto3
 import pandas as pd
 
-UNIDADE = {
-    'm': 'minutos',
-    'h': 'horas',
-    'd': 'dias'
+UNITY = {
+    'm': 'minutes',
+    'h': 'hours',
+    'd': 'days'
 }
-
 
 def get_file_modification(file_path, region=None, max_iter=0):
     s3client = boto3.client('s3', region_name=region)
@@ -48,8 +47,8 @@ if __name__ == '__main__':
                   help="Critical time interval to alert")
     parser.add_argument("-w", "--warn_interval", action="store", type=int, default=60,
                   help="Warning time interval to alert")
-    parser.add_argument("-u", "--unidade", default='m', action="store",
-                  help="Unidade de tempo Default: m - minutes")
+    parser.add_argument("-u", "--unity", default='m', action="store",
+                  help="Time unity. Default: m - minutes")
     parser.add_argument("-r", "--region",
                   help="Region of bucket (Optional)")
     parser.add_argument("-m", "--max_iter", default='100',
@@ -69,24 +68,27 @@ if __name__ == '__main__':
         for f in args.file:
             logging.debug('Reading file %s' % f)
             obj_dt = get_file_modification(f, region=args.region, max_iter=args.max_iter)
-            if args.unidade == 'm':
-                intervalo = int((datetime.now(timezone.utc) - obj_dt).seconds / 60)
-            elif args.unidade == 'h':
-                intervalo = int((datetime.now(timezone.utc) - obj_dt).seconds / (60 * 60))
-            elif args.unidade == 'd':
-                intervalo = int((datetime.now(timezone.utc) - obj_dt).seconds / (60 * 60 * 24))
+            if args.unity == 'm':
+                interval = int((datetime.now(timezone.utc) - obj_dt).seconds / 60)
+            elif args.unity == 'h':
+                interval = int((datetime.now(timezone.utc) - obj_dt).seconds / (60 * 60))
+            elif args.unity == 'd':
+                interval = int((datetime.now(timezone.utc) - obj_dt).seconds / (60 * 60 * 24))
             else:
-                parser.error("Unidade dão reconhecida")
-            if intervalo > args.critical_interval:
-                print("CRITICAL: {} {}".format(intervalo, UNIDADE[args.unidade]))
-                sys.exit(2)
-            elif intervalo > args.warn_interval:
-                print("WARN: {} {}".format(intervalo, UNIDADE[args.unidade]))
-                sys.exit(1)
+                parser.error("Unity unkown (m: minutes, h: hours, d: days)")
+            if interval > args.critical_interval:
+                return_msg = "CRITICAL"
+                return_code = 2
+            elif interval > args.warn_interval:
+                return_msg = "WARN"
+                return_code = 1
             else:
-                print("Ok: {} {}".format(intervalo, UNIDADE[args.unidade]))
+                return_msg = "OK"
+                return_code = 0
     except:
         print('Unknown error found')
-        raise
-        sys.exit(3)
+        return_msg = "Unknown"
+        return_code = 3
+    print("{}: {} {}".format(return_msg, interval, UNITY[args.unity]))
+    sys.exit(return_code)
 
