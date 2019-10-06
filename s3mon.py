@@ -102,5 +102,4 @@ if __name__ == '__main__':
         logging.critical('Unknown error found')
         raise # for debug purpose
         sys.exit(1)
-    else:
-        sys.exit(0)
+
