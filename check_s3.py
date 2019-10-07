@@ -35,6 +35,7 @@ def get_file_modification(file_path, region=None, max_iter=0):
         o = file_path.split("/")
         bucket = o[0]
         key = "/".join(o[1:])
+    logging.debug("Bucket: {}; Key: {}".format(bucket,key))
     obj = s3client.get_object(Bucket=bucket, Key=key)
     return obj['LastModified']
 
