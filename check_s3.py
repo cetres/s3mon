@@ -64,7 +64,7 @@ if __name__ == '__main__':
     
     logging.basicConfig(filename=args.log_file, level=LOG_LEVEL, format='%(asctime)-15s %(levelname)s %(message)s')
     interval = 0
-    
+
     try:
         for f in args.file:
             logging.debug('Reading file %s' % f)
@@ -90,6 +90,9 @@ if __name__ == '__main__':
         print('Unknown error found')
         return_msg = "Unknown"
         return_code = 3
-    print("{}: {} {}".format(return_msg, interval, UNITY[args.unity]))
+        if LOG_LEVEL == logging.DEBUG:
+            traceback.print_exc(file=sys.stdout)
+    if return_code < 3:
+        print("{}: {} {}".format(return_msg, interval, UNITY[args.unity]))
     sys.exit(return_code)
 
