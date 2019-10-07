@@ -63,7 +63,8 @@ if __name__ == '__main__':
     LOG_LEVEL = logging.DEBUG if args.debug else logging.WARN
     
     logging.basicConfig(filename=args.log_file, level=LOG_LEVEL, format='%(asctime)-15s %(levelname)s %(message)s')
-
+    interval = 0
+    
     try:
         for f in args.file:
             logging.debug('Reading file %s' % f)
