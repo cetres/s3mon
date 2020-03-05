@@ -39,7 +39,7 @@ def get_file_modification(file_path, region=None, max_iter=0):
     obj = s3client.get_object(Bucket=bucket, Key=key)
     return obj['LastModified']
 
-if __name__ == '__main__':
+def main():
     description = "Identify older files in s3 bucket"
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('file', metavar='FILE', type=str, nargs='+',
@@ -97,3 +97,5 @@ if __name__ == '__main__':
         print("{}: {} {}".format(return_msg, interval, UNITY[args.unity]))
     sys.exit(return_code)
 
+if __name__ == '__main__':
+    main()
